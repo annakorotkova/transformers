@@ -587,9 +587,8 @@ class Trainer:
             delattr(self, "_past")
             
         # End of training time
-        self.finetuning_time = finetuning_time
-        finetuning_time = time.time() - start_time
-        logger.info("\n\nFine tuning done in total %f secs\n\n", finetuning_time)         
+        self.finetuning_time = time.time() - start_time
+        logger.info("\n\nFine tuning done in total %f secs\n\n", self.finetuning_time)         
 
         logger.info("\n\nTraining completed. Do not forget to share your model on huggingface.co/models =)\n\n")
         return TrainOutput(self.global_step, tr_loss / self.global_step)
@@ -600,10 +599,10 @@ class Trainer:
         
         # Log finetuning time
         if self.finetuning_time is not None:
-            logs["finetuning_time"] = finetuning_time
+            logs["finetuning_time"] = self.finetuning_time
         # Log inference time
         if self.inference_time is not None:
-            logs["inference_time"] = inference_time
+            logs["inference_time"] = self.inference_time
          
         if self.global_step is None:
             # when logging evaluation metrics without training
@@ -850,9 +849,8 @@ class Trainer:
                 outputs = model(**inputs)
                 
                 # End inference time
-                self.inference_time = inference_time
-                inference_time = time.time() - start_inf_time
-                logger.info("\n\nFine tuning done in total %f secs\n\n", inference_time) 
+                self.inference_time = time.time() - start_inf_time
+                logger.info("\n\nFine tuning done in total %f secs\n\n", self.inference_time) 
                 
                 if has_labels:
                     step_eval_loss, logits = outputs[:2]
