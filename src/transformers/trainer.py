@@ -850,7 +850,7 @@ class Trainer:
                 
                 # End inference time
                 self.inference_time = time.time() - start_inf_time
-                logger.info("\n\nFine tuning done in total %f secs\n\n", self.inference_time) 
+                logger.info("\n\nInference done in total %f secs\n\n", self.inference_time) 
                 
                 if has_labels:
                     step_eval_loss, logits = outputs[:2]
