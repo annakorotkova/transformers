@@ -3,6 +3,7 @@ import math
 import os
 import re
 import shutil
+import time
 import warnings
 from contextlib import contextmanager
 from pathlib import Path
@@ -466,6 +467,10 @@ class Trainer:
             except ValueError:
                 self.global_step = 0
                 logger.info("  Starting fine-tuning.")
+                
+        #  Measure fine-tuning time
+        start_time = time.time()
+        logger.info("**** Starting time: %f ***", start_time)
 
         tr_loss = 0.0
         logging_loss = 0.0
@@ -574,6 +579,11 @@ class Trainer:
         if self.args.past_index and hasattr(self, "_past"):
             # Clean the state at the end of training
             delattr(self, "_past")
+            
+        # End of training time
+        #finetuning_time = self.finetuning_time
+        finetuning_time = time.time() - start_time
+        logger.info("\n\nFine tuning done in total %f secs\n\n", self.args.finetuning_time)         
 
         logger.info("\n\nTraining completed. Do not forget to share your model on huggingface.co/models =)\n\n")
         return TrainOutput(self.global_step, tr_loss / self.global_step)
@@ -581,6 +591,14 @@ class Trainer:
     def _log(self, logs: Dict[str, float], iterator: Optional[tqdm] = None) -> None:
         if self.epoch is not None:
             logs["epoch"] = self.epoch
+        
+        # Log finetuning time
+        if finetuning_time is not None:
+            logs["finetuning_time"] = finetuning_time
+        # Log inference time
+        if inference_time is not None:
+            logs["inference_time"] = inference_time
+         
         if self.global_step is None:
             # when logging evaluation metrics without training
             self.global_step = 0
@@ -820,7 +838,14 @@ class Trainer:
                 inputs["mems"] = past
 
             with torch.no_grad():
+                # Inference time
+                start_inf_time = time.time()
+                
                 outputs = model(**inputs)
+                
+                # End inference time
+                inference_time = time.time() - start_inf_time
+                
                 if has_labels:
                     step_eval_loss, logits = outputs[:2]
                     eval_losses += [step_eval_loss.mean().item()]
