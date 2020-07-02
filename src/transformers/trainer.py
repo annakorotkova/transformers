@@ -173,6 +173,8 @@ class Trainer:
     optimizers: Tuple[torch.optim.Optimizer, torch.optim.lr_scheduler.LambdaLR] = None
     global_step: Optional[int] = None
     epoch: Optional[float] = None
+    finetuning_time: float
+    inference_time: float
 
     def __init__(
         self,
@@ -185,6 +187,8 @@ class Trainer:
         prediction_loss_only=False,
         tb_writer: Optional["SummaryWriter"] = None,
         optimizers: Tuple[torch.optim.Optimizer, torch.optim.lr_scheduler.LambdaLR] = None,
+        finetuning_time=None,
+        inference_time=None,
     ):
         self.model = model.to(args.device)
         self.args = args
@@ -194,6 +198,8 @@ class Trainer:
         self.compute_metrics = compute_metrics
         self.prediction_loss_only = prediction_loss_only
         self.optimizers = optimizers
+        self.finetuning_time = finetuning_time
+        self.inference_time = inference_time
         if tb_writer is not None:
             self.tb_writer = tb_writer
         elif is_tensorboard_available() and self.is_world_master():
@@ -581,6 +587,7 @@ class Trainer:
             delattr(self, "_past")
             
         # End of training time
+        self.finetuning_time = finetuning_time
         finetuning_time = time.time() - start_time
         logger.info("\n\nFine tuning done in total %f secs\n\n", finetuning_time)         
 
@@ -592,10 +599,10 @@ class Trainer:
             logs["epoch"] = self.epoch
         
         # Log finetuning time
-        if finetuning_time is not None:
+        if self.finetuning_time is not None:
             logs["finetuning_time"] = finetuning_time
         # Log inference time
-        if inference_time is not None:
+        if self.inference_time is not None:
             logs["inference_time"] = inference_time
          
         if self.global_step is None:
@@ -843,6 +850,7 @@ class Trainer:
                 outputs = model(**inputs)
                 
                 # End inference time
+                self.inference_time = inference_time
                 inference_time = time.time() - start_inf_time
                 logger.info("\n\nFine tuning done in total %f secs\n\n", inference_time) 
                 
