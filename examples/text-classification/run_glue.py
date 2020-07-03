@@ -23,6 +23,10 @@ import sys
 from dataclasses import dataclass, field
 from typing import Callable, Dict, Optional
 
+## in order to disable the warning "The current process just got forked. Disabling parallelism to avoid deadlocks... To disable this warning, please explicitly set TOKENIZERS_PARALLELISM=(true | false)"
+import os
+os.environ["TOKENIZERS_PARALLELISM"] = "true"
+
 import numpy as np
 
 from transformers import AutoConfig, AutoModelForSequenceClassification, AutoTokenizer, EvalPrediction, GlueDataset
