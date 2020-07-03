@@ -8,4 +8,4 @@ Manually installed "pip install tokenizer==0.7.0" because otherwise the warning 
 To disable this warning, please explicitly set TOKENIZERS_PARALLELISM=(true | false)" is displayed.
 
 write_dict[key] = value.__getstate__() in script "tokenizers_utils_base.py" (otherwise RoBERTa doesn't work)
-$\rightarrow$ didn't change anything; maybe value.content instead ?!
+--> didn't change anything; maybe value.content instead ?!
