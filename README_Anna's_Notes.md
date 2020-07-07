@@ -30,9 +30,9 @@ metric:
   name: eval_acc
   goal: maximize
 parameters:
-  %
-  % parameters to be optimized over
-  %
+  
+  -- parameters to be optimized over
+  
   - learning_rate:
       values: [3e-5, 4e-5, 5e-5]
   - per_device_train_batch_size:
@@ -45,9 +45,9 @@ parameters:
       "roberta-base", "roberta-large",
       "albert-base-v1", "albert-large-v1",
       "xlnet-base-cased"]
-  %
-  % fixed parameters
-  %
+  
+  -- fixed parameters
+  
   task_name: 
     value: WNLI
   data_dir: 
@@ -62,4 +62,7 @@ parameters:
     value: 50
   weight_decay:
     value: .01
+    
+    
+## ftp16 ausprobieren (weniger präzise als ftp32, aber braucht dafür deutlich weniger Zeit!!)    
 
