@@ -30,24 +30,24 @@ metric:
   name: eval_acc
   goal: maximize
 parameters:
-  #
-  # parameters to be optimized over
-  #
-  learning_rate:
-    values: [3e-5, 4e-5, 5e-5]
-  per_device_train_batch_size:
-    values: [16, 32, 64]
-  max_seq_length:
-    values: [128, 256, 385, 512]
-  model_name_or_path:
-    values: ["bert-base-uncased", "bert-large-uncased", 
-    "distilbert-base-uncased",  
-    "roberta-base", "roberta-large",
-    "albert-base-v1", "albert-large-v1",
-    "xlnet-base-cased"]
-  #
-  # fixed parameters
-  #
+  %
+  % parameters to be optimized over
+  %
+  - learning_rate:
+      values: [3e-5, 4e-5, 5e-5]
+  - per_device_train_batch_size:
+      values: [16, 32, 64]
+  - max_seq_length:
+      values: [128, 256, 385, 512]
+  - model_name_or_path:
+      values: ["bert-base-uncased", "bert-large-uncased", 
+      "distilbert-base-uncased",  
+      "roberta-base", "roberta-large",
+      "albert-base-v1", "albert-large-v1",
+      "xlnet-base-cased"]
+  %
+  % fixed parameters
+  %
   task_name: 
     value: WNLI
   data_dir: 
