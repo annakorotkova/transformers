@@ -67,5 +67,4 @@ parameters:
 ### try out ftp16 (less precise than ftp32, but needs much less time; only works for GPU!!)
 
 ### have a look at 'benchmark'!! (already implemented functions)
-### usually you have to run a function multiple times & then pick the minimum
-
+### usually you have to run a function multiple times to stablize compilation (only for inference?!) & then pick the minimum
