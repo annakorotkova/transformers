@@ -64,5 +64,8 @@ parameters:
     value: .01
     
     
-## ftp16 ausprobieren (weniger präzise als ftp32, aber braucht dafür deutlich weniger Zeit!!)    
+### try out ftp16 (less precise than ftp32, but needs much less time; only works for GPU!!)
+
+### have a look at 'benchmark'!! (already implemented functions)
+### usually you have to run a function multiple times & then pick the minimum
 
