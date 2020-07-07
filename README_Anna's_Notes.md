@@ -70,3 +70,4 @@ parameters:
 ### usually you have to run a function multiple times to stablize compilation (only for inference?!) & then pick the minimum
 
 ### batch_size for XLNet (recommended): 32, 48, 128 --> ausprobieren ?!
+### Adam epsilon = 1e-6 for XLNet (& 1e-8 for BERT, etc)
