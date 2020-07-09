@@ -843,14 +843,17 @@ class Trainer:
                 inputs["mems"] = past
 
             with torch.no_grad():
+                
                 # Inference time
                 start_inf_time = time.time()
                 
                 outputs = model(**inputs)
                 
                 # End inference time
-                self.inference_time = time.time() - start_inf_time
-                logger.info("\n\nInference done in total %f secs\n\n", self.inference_time) 
+                # Inference is defined by a single forward pass (huggingface definition https://huggingface.co/transformers/benchmarks.html)
+                end_inf_time = time.time() - start_inf_time
+                self.inferene_time_list.append(end_inf_time)
+                logger.info("\n\nInference done in total %f secs\n\n", end_inf_time) 
                 
                 if has_labels:
                     step_eval_loss, logits = outputs[:2]
@@ -870,6 +873,10 @@ class Trainer:
                         label_ids = inputs["labels"].detach()
                     else:
                         label_ids = torch.cat((label_ids, inputs["labels"].detach()), dim=0)
+                        
+        # average the inference time
+        self.inference_time = mean(inference_time_list)
+        logger.info("\n\nAverage inference time: %f secs\n\n", self.inference_time) 
 
         if self.args.local_rank != -1:
             # In distributed mode, concatenate all results from all nodes:
