@@ -38,7 +38,7 @@ parameters:
   - per_device_train_batch_size:
       values: [16, 32, 64]
   - max_seq_length:
-      values: [128, 256, 385, 512]
+      values: [128, 256, 384, 512]
   - model_name_or_path:
       values: ["bert-base-uncased", "bert-large-uncased", 
       "distilbert-base-uncased",  
