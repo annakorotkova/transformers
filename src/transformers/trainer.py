@@ -842,6 +842,8 @@ class Trainer:
             if self.args.past_index >= 0:
                 inputs["mems"] = past
 
+            # Disabling gradient calculation is useful for inference, when you are sure that you will not call Tensor.backward() -> reduce memory consumption
+            # https://pytorch.org/docs/master/generated/torch.no_grad.html    
             with torch.no_grad():
                 
                 # Inference time
