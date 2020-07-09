@@ -874,8 +874,9 @@ class Trainer:
                     else:
                         label_ids = torch.cat((label_ids, inputs["labels"].detach()), dim=0)
                         
-        # average the inference time
-        self.inference_time = mean(inference_time_list)
+        # min of the inference time
+        self.inference_time = min(inference_time_list)
+        # https://docs.python.org/2/library/timeit.html#timeit.Timer.repeat --> take min() & not mean()
         logger.info("\n\nAverage inference time: %f secs\n\n", self.inference_time) 
 
         if self.args.local_rank != -1:
