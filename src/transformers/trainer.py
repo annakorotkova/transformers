@@ -879,7 +879,7 @@ class Trainer:
         # min of the inference time
         self.inference_time = min(inference_time_list)
         # https://docs.python.org/2/library/timeit.html#timeit.Timer.repeat --> take min() & not mean()
-        logger.info("\n\nAverage inference time: %f secs\n\n", self.inference_time) 
+        logger.info("\n\n (Minimal) inference time: %f secs\n\n", self.inference_time) 
 
         if self.args.local_rank != -1:
             # In distributed mode, concatenate all results from all nodes:
