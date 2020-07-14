@@ -175,7 +175,7 @@ class Trainer:
     epoch: Optional[float] = None
     finetuning_time: float
     inference_time: float
-    inference_time_list: list(float)
+    inference_time_list: List
 
     def __init__(
         self,
