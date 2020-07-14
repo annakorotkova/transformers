@@ -190,7 +190,7 @@ class Trainer:
         optimizers: Tuple[torch.optim.Optimizer, torch.optim.lr_scheduler.LambdaLR] = None,
         finetuning_time=None,
         inference_time=None,
-        inference_time_list: List[float] = None,
+        inference_time_list: List[float] = list(),
     ):
         self.model = model.to(args.device)
         self.args = args
