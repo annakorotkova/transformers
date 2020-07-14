@@ -883,7 +883,7 @@ class Trainer:
                         label_ids = torch.cat((label_ids, inputs["labels"].detach()), dim=0)
                         
         # min of the inference time
-        self.inference_time = min(inference_time_list)
+        self.inference_time = min(self.inference_time_list)
         # https://docs.python.org/2/library/timeit.html#timeit.Timer.repeat --> take min() & not mean()
         logger.info("\n\n (Minimal) inference time: %f secs\n\n", self.inference_time) 
 
