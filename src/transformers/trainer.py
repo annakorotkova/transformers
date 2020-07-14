@@ -175,6 +175,7 @@ class Trainer:
     epoch: Optional[float] = None
     finetuning_time: float
     inference_time: float
+    inference_time_list: list(float)
 
     def __init__(
         self,
@@ -189,6 +190,7 @@ class Trainer:
         optimizers: Tuple[torch.optim.Optimizer, torch.optim.lr_scheduler.LambdaLR] = None,
         finetuning_time=None,
         inference_time=None,
+        inference_time_list=None,
     ):
         self.model = model.to(args.device)
         self.args = args
@@ -200,6 +202,7 @@ class Trainer:
         self.optimizers = optimizers
         self.finetuning_time = finetuning_time
         self.inference_time = inference_time
+        self.inference_time_list = inference_time_list
         if tb_writer is not None:
             self.tb_writer = tb_writer
         elif is_tensorboard_available() and self.is_world_master():
@@ -600,6 +603,9 @@ class Trainer:
         # Log finetuning time
         if self.finetuning_time is not None:
             logs["finetuning_time"] = self.finetuning_time
+        # Log inference time list
+        if self.inference_time_list is not None:
+            logs["inference_time_list"] = self.inference_time_list
         # Log inference time
         if self.inference_time is not None:
             logs["inference_time"] = self.inference_time
@@ -854,7 +860,7 @@ class Trainer:
                 # End inference time
                 # Inference is defined by a single forward pass (huggingface definition https://huggingface.co/transformers/benchmarks.html)
                 end_inf_time = time.time() - start_inf_time
-                self.inferene_time_list.append(end_inf_time)
+                self.inference_time_list.append(end_inf_time)
                 logger.info("\n\nInference done in total %f secs\n\n", end_inf_time) 
                 
                 if has_labels:
