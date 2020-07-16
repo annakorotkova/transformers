@@ -485,119 +485,119 @@ class Trainer:
         logger.info("**** Starting tracking fine-tuning time ***")
 
         self.finetuning_time_list = timeit.repeat(
-            '''
-            tr_loss = 0.0
-            logging_loss = 0.0
-            model.zero_grad()
-            train_iterator = trange(
-                epochs_trained, int(num_train_epochs), desc="Epoch", disable=not self.is_local_master()
-            )
-            for epoch in train_iterator:
-                if isinstance(train_dataloader, DataLoader) and isinstance(train_dataloader.sampler, DistributedSampler):
-                    train_dataloader.sampler.set_epoch(epoch)
+        '''
+        tr_loss = 0.0
+        logging_loss = 0.0
+        model.zero_grad()
+        train_iterator = trange(
+            epochs_trained, int(num_train_epochs), desc="Epoch", disable=not self.is_local_master()
+        )
+        for epoch in train_iterator:
+            if isinstance(train_dataloader, DataLoader) and isinstance(train_dataloader.sampler, DistributedSampler):
+                train_dataloader.sampler.set_epoch(epoch)
 
-                if is_torch_tpu_available():
-                    parallel_loader = pl.ParallelLoader(train_dataloader, [self.args.device]).per_device_loader(
-                        self.args.device
-                    )
-                    epoch_iterator = tqdm(parallel_loader, desc="Iteration", disable=not self.is_local_master())
-                else:
-                    epoch_iterator = tqdm(train_dataloader, desc="Iteration", disable=not self.is_local_master())
+            if is_torch_tpu_available():
+                parallel_loader = pl.ParallelLoader(train_dataloader, [self.args.device]).per_device_loader(
+                    self.args.device
+                )
+                epoch_iterator = tqdm(parallel_loader, desc="Iteration", disable=not self.is_local_master())
+            else:
+                epoch_iterator = tqdm(train_dataloader, desc="Iteration", disable=not self.is_local_master())
 
-                # Reset the past mems state at the beginning of each epoch if necessary.
-                if self.args.past_index >= 0:
-                    self._past = None
+            # Reset the past mems state at the beginning of each epoch if necessary.
+            if self.args.past_index >= 0:
+                self._past = None
 
-                for step, inputs in enumerate(epoch_iterator):
+            for step, inputs in enumerate(epoch_iterator):
 
-                    # Skip past any already trained steps if resuming training
-                    if steps_trained_in_current_epoch > 0:
-                        steps_trained_in_current_epoch -= 1
-                        continue
+                # Skip past any already trained steps if resuming training
+                if steps_trained_in_current_epoch > 0:
+                    steps_trained_in_current_epoch -= 1
+                    continue
 
-                    tr_loss += self._training_step(model, inputs, optimizer)
+                tr_loss += self._training_step(model, inputs, optimizer)
 
-                    if (step + 1) % self.args.gradient_accumulation_steps == 0 or (
-                        # last step in epoch but step is always smaller than gradient_accumulation_steps
-                        len(epoch_iterator) <= self.args.gradient_accumulation_steps
-                        and (step + 1) == len(epoch_iterator)
+                if (step + 1) % self.args.gradient_accumulation_steps == 0 or (
+                    # last step in epoch but step is always smaller than gradient_accumulation_steps
+                    len(epoch_iterator) <= self.args.gradient_accumulation_steps
+                    and (step + 1) == len(epoch_iterator)
+                ):
+                    if self.args.fp16:
+                        torch.nn.utils.clip_grad_norm_(amp.master_params(optimizer), self.args.max_grad_norm)
+                    else:
+                        torch.nn.utils.clip_grad_norm_(model.parameters(), self.args.max_grad_norm)
+
+                    if is_torch_tpu_available():
+                        xm.optimizer_step(optimizer)
+                    else:
+                        optimizer.step()
+
+                    scheduler.step()
+                    model.zero_grad()
+                    self.global_step += 1
+                    self.epoch = epoch + (step + 1) / len(epoch_iterator)
+
+                    if (self.args.logging_steps > 0 and self.global_step % self.args.logging_steps == 0) or (
+                        self.global_step == 1 and self.args.logging_first_step
                     ):
-                        if self.args.fp16:
-                            torch.nn.utils.clip_grad_norm_(amp.master_params(optimizer), self.args.max_grad_norm)
+                        logs: Dict[str, float] = {}
+                        logs["loss"] = (tr_loss - logging_loss) / self.args.logging_steps
+                        # backward compatibility for pytorch schedulers
+                        logs["learning_rate"] = (
+                            scheduler.get_last_lr()[0]
+                            if version.parse(torch.__version__) >= version.parse("1.4")
+                            else scheduler.get_lr()[0]
+                        )
+                        logging_loss = tr_loss
+
+                        self._log(logs)
+
+                    if self.args.evaluate_during_training and self.global_step % self.args.eval_steps == 0:
+                        self.evaluate()
+
+                    if self.args.save_steps > 0 and self.global_step % self.args.save_steps == 0:
+                        # In all cases (even distributed/parallel), self.model is always a reference
+                        # to the model we want to save.
+                        if hasattr(model, "module"):
+                            assert model.module is self.model
                         else:
-                            torch.nn.utils.clip_grad_norm_(model.parameters(), self.args.max_grad_norm)
+                            assert model is self.model
+                        # Save model checkpoint
+                        output_dir = os.path.join(self.args.output_dir, f"{PREFIX_CHECKPOINT_DIR}-{self.global_step}")
+
+                        self.save_model(output_dir)
+
+                        if self.is_world_master():
+                            self._rotate_checkpoints()
 
                         if is_torch_tpu_available():
-                            xm.optimizer_step(optimizer)
-                        else:
-                            optimizer.step()
+                            xm.rendezvous("saving_optimizer_states")
+                            xm.save(optimizer.state_dict(), os.path.join(output_dir, "optimizer.pt"))
+                            xm.save(scheduler.state_dict(), os.path.join(output_dir, "scheduler.pt"))
+                        elif self.is_world_master():
+                            torch.save(optimizer.state_dict(), os.path.join(output_dir, "optimizer.pt"))
+                            torch.save(scheduler.state_dict(), os.path.join(output_dir, "scheduler.pt"))
 
-                        scheduler.step()
-                        model.zero_grad()
-                        self.global_step += 1
-                        self.epoch = epoch + (step + 1) / len(epoch_iterator)
-
-                        if (self.args.logging_steps > 0 and self.global_step % self.args.logging_steps == 0) or (
-                            self.global_step == 1 and self.args.logging_first_step
-                        ):
-                            logs: Dict[str, float] = {}
-                            logs["loss"] = (tr_loss - logging_loss) / self.args.logging_steps
-                            # backward compatibility for pytorch schedulers
-                            logs["learning_rate"] = (
-                                scheduler.get_last_lr()[0]
-                                if version.parse(torch.__version__) >= version.parse("1.4")
-                                else scheduler.get_lr()[0]
-                            )
-                            logging_loss = tr_loss
-
-                            self._log(logs)
-
-                        if self.args.evaluate_during_training and self.global_step % self.args.eval_steps == 0:
-                            self.evaluate()
-
-                        if self.args.save_steps > 0 and self.global_step % self.args.save_steps == 0:
-                            # In all cases (even distributed/parallel), self.model is always a reference
-                            # to the model we want to save.
-                            if hasattr(model, "module"):
-                                assert model.module is self.model
-                            else:
-                                assert model is self.model
-                            # Save model checkpoint
-                            output_dir = os.path.join(self.args.output_dir, f"{PREFIX_CHECKPOINT_DIR}-{self.global_step}")
-
-                            self.save_model(output_dir)
-
-                            if self.is_world_master():
-                                self._rotate_checkpoints()
-
-                            if is_torch_tpu_available():
-                                xm.rendezvous("saving_optimizer_states")
-                                xm.save(optimizer.state_dict(), os.path.join(output_dir, "optimizer.pt"))
-                                xm.save(scheduler.state_dict(), os.path.join(output_dir, "scheduler.pt"))
-                            elif self.is_world_master():
-                                torch.save(optimizer.state_dict(), os.path.join(output_dir, "optimizer.pt"))
-                                torch.save(scheduler.state_dict(), os.path.join(output_dir, "scheduler.pt"))
-
-                    if self.args.max_steps > 0 and self.global_step > self.args.max_steps:
-                        epoch_iterator.close()
-                        break
                 if self.args.max_steps > 0 and self.global_step > self.args.max_steps:
-                    train_iterator.close()
+                    epoch_iterator.close()
                     break
-                if self.args.tpu_metrics_debug or self.args.debug:
-                    # tpu-comment: Logging debug metrics for PyTorch/XLA (compile, execute times, ops, etc.)
-                    xm.master_print(met.metrics_report())
+            if self.args.max_steps > 0 and self.global_step > self.args.max_steps:
+                train_iterator.close()
+                break
+            if self.args.tpu_metrics_debug or self.args.debug:
+                # tpu-comment: Logging debug metrics for PyTorch/XLA (compile, execute times, ops, etc.)
+                xm.master_print(met.metrics_report())
 
-            if self.tb_writer:
-                self.tb_writer.close()
-            if self.args.past_index and hasattr(self, "_past"):
-                # Clean the state at the end of training
-                delattr(self, "_past")
+        if self.tb_writer:
+            self.tb_writer.close()
+        if self.args.past_index and hasattr(self, "_past"):
+            # Clean the state at the end of training
+            delattr(self, "_past")
             
-            # End of training time
-            # self.finetuning_time = time.time() - start_time
-            ''',
-            repeat = self.args.train_time_repeat, number = self.args.train_time_number)
+        # End of training time
+        # self.finetuning_time = time.time() - start_time
+        ''',
+        repeat = self.args.train_time_repeat, number = self.args.train_time_number)
         
         self.finetuning_time = min(self.finetuning_time_list) / self.args.train_time_number
             
