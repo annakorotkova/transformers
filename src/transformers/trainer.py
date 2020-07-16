@@ -3,7 +3,7 @@ import math
 import os
 import re
 import shutil
-import time
+import time     # added by Anna
 import timeit   # added by Anna
 import warnings
 from contextlib import contextmanager
@@ -33,8 +33,6 @@ from .trainer_utils import (
     set_seed,
 )
 from .training_args import TrainingArguments
-from .benchmark import PytorchBenchmark, _measure_speed   # added by Anna
-
 
 if is_apex_available():
     from apex import amp
