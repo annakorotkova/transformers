@@ -109,8 +109,14 @@ class TrainingArguments:
             make use of the past hidden states for their predictions. If this argument is set to a positive int, the
             ``Trainer`` will use the corresponding output (usually index 2) as the past state and feed it to the model
             at the next training step under the keyword argument ``mems``.
+        train_time_repeat (:obj: `float`, `optional`, defaults to 3):
+            Number of repeat count within timeit.repeat() function for measuring the finetuning_time (refers to argument 'repeat' in timeit.repeat()).
+        train_time_number (:obj: `float`, `optional`, defaults to 1):
+            Number executions within timeit.repeat() function for measuring the finetuning_time (refers to argument 'number' in timeit.repeat()).
     """
 
+    # train_time_repeat and train_time_number added by Anna
+    
     output_dir: str = field(
         metadata={"help": "The output directory where the model predictions and checkpoints will be written."}
     )
@@ -218,6 +224,18 @@ class TrainingArguments:
     past_index: int = field(
         default=-1,
         metadata={"help": "If >=0, uses the corresponding part of the output as the past state for next step."},
+    )
+    
+    # Added by Anna
+    train_time_repeat: float = field(
+        default=3,
+        metadata={"help": "Repeat timeit.repeat() function for measuring finetuning_time 'train_time_repeat' times."},
+    )
+    
+    # Added by Anna
+    train_time_number:: float = field(
+        default=1,
+        metadata={"help": "Execute timeit.repeat() function for measuring finetuning_time 'train_time_number' number of times."},
     )
 
     @property
