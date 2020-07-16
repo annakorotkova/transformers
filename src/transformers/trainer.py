@@ -597,9 +597,9 @@ class Trainer:
             # End of training time
             # self.finetuning_time = time.time() - start_time
             ''',
-            repeat = self.train_time_repeat, number = self.train_time_number)
+            repeat = self.args.train_time_repeat, number = self.args.train_time_number)
         
-        self.finetuning_time = min(self.finetuning_time_list) / self.train_time_number
+        self.finetuning_time = min(self.finetuning_time_list) / self.args.train_time_number
             
         logger.info("\n\nMinimal fine-tuning time: %f secs\n\n", self.finetuning_time)         
 
