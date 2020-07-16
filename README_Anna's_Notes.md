@@ -71,3 +71,5 @@ parameters:
 
 ### batch_size for XLNet (recommended): 32, 48, 128 --> ausprobieren ?!
 ### Adam epsilon = 1e-6 for XLNet (& 1e-8 for BERT, etc)
+
+### Werden wirklich alle 40 Kerne der CPU verwendet?? -> JA (siehe training_args.py - 'per_device_train_batch_size' -> 'Batch size per GPU/TPU core/CPU for training')
