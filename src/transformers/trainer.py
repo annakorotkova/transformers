@@ -65,8 +65,6 @@ if is_wandb_available():
 
 ## import builtins for timeit
 import builtins
-builtins.__dict__.update(locals())
-
 
 logger = logging.getLogger(__name__)
 
@@ -135,6 +133,8 @@ def get_tpu_sampler(dataset: Dataset):
         return RandomSampler(dataset)
     return DistributedSampler(dataset, num_replicas=xm.xrt_world_size(), rank=xm.get_ordinal())
 
+# update locals()
+builtins.__dict__.update(locals())
 
 class Trainer:
     """
@@ -388,6 +388,9 @@ class Trainer:
         Helper to get number of samples in a :class:`~torch.utils.data.DataLoader` by accessing its Dataset.
         """
         return len(dataloader.dataset)
+    
+    # update locals()
+    builtins.__dict__.update(locals())
 
     def train(self, model_path: Optional[str] = None):
         """
@@ -485,6 +488,8 @@ class Trainer:
                 self.global_step = 0
                 logger.info("  Starting fine-tuning.")
         
+        # update locals()
+        builtins.__dict__.update(locals())
         
         # Measure fine-tuning time
         #start_time = time.time()
