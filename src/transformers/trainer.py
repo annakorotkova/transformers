@@ -583,7 +583,7 @@ class Trainer:
             delattr(self, "_past");
         '''
         self.finetuning_time_list = timeit.Timer(setup = 'from __main__ import globals()', stmt = finetuning_statement, 
-                                                 globals = {'local': locals(), 'global': globals()).repeat(repeat = 1, number = 2)  # pass both global and local variables
+                                                 globals = {'local': locals(), 'global': globals()}).repeat(repeat = 1, number = 2)  # pass both global and local variables
         
         self.finetuning_time = min(self.finetuning_time_list) / self.args.train_time_number
             
