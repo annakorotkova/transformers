@@ -485,8 +485,7 @@ class Trainer:
         logger.info("**** Starting tracking fine-tuning time ***")
 
         self.finetuning_time_list = timeit.repeat(
-        '''\
-        tr_loss = 0.0
+        '''tr_loss = 0.0
         logging_loss = 0.0
         model.zero_grad()
         train_iterator = trange(
