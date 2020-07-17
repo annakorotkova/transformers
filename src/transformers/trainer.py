@@ -582,7 +582,9 @@ class Trainer:
             # Clean the state at the end of training
             delattr(self, "_past");
         '''
-        self.finetuning_time_list = timeit.Timer(stmt = finetuning_statement, globals = {'local': locals().items(), 'global': globals().items()}).repeat(repeat = 1, number = 2)  # pass both global and local variables
+        # add locals() to globals()
+        globals()['local'] = locals()
+        self.finetuning_time_list = timeit.Timer(stmt = finetuning_statement, globals = globals()).repeat(repeat = 1, number = 2)  # pass both global and local variables
         
         self.finetuning_time = min(self.finetuning_time_list) / self.args.train_time_number
             
