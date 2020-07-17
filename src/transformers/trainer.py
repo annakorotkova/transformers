@@ -395,22 +395,20 @@ class Trainer:
                 training will resume from the optimizer/scheduler states loaded here.
         """
         
-        # finetuning setup (for measuring finetung time with timeit)
-        finetuning_setup = '''from __main__ import *; # in order to be able to have access to arguments of class 'Trainer'
-        \ntrain_dataloader = self.get_train_dataloader();
-        \nif self.args.max_steps > 0:
+        train_dataloader = self.get_train_dataloader()
+        if self.args.max_steps > 0:
             t_total = self.args.max_steps
             num_train_epochs = (
                 self.args.max_steps // (len(train_dataloader) // self.args.gradient_accumulation_steps) + 1
-            );
-        \nelse:
+            )
+        else:
             t_total = int(len(train_dataloader) // self.args.gradient_accumulation_steps * self.args.num_train_epochs)
-            num_train_epochs = self.args.num_train_epochs;
+            num_train_epochs = self.args.num_train_epochs
 
-        \noptimizer, scheduler = self.get_optimizers(num_training_steps=t_total);
+        optimizer, scheduler = self.get_optimizers(num_training_steps=t_total)
 
         # Check if saved optimizer or scheduler states exist
-        \nif (
+        if (
             model_path is not None
             and os.path.isfile(os.path.join(model_path, "optimizer.pt"))
             and os.path.isfile(os.path.join(model_path, "scheduler.pt"))
@@ -419,54 +417,54 @@ class Trainer:
             optimizer.load_state_dict(
                 torch.load(os.path.join(model_path, "optimizer.pt"), map_location=self.args.device)
             )
-            scheduler.load_state_dict(torch.load(os.path.join(model_path, "scheduler.pt")));
+            scheduler.load_state_dict(torch.load(os.path.join(model_path, "scheduler.pt")))
 
-        \nmodel = self.model;
-        \nif self.args.fp16:
+        model = self.model
+        if self.args.fp16:
             if not is_apex_available():
                 raise ImportError("Please install apex from https://www.github.com/nvidia/apex to use fp16 training.")
-            model, optimizer = amp.initialize(model, optimizer, opt_level=self.args.fp16_opt_level);
+            model, optimizer = amp.initialize(model, optimizer, opt_level=self.args.fp16_opt_level)
 
         # multi-gpu training (should be after apex fp16 initialization)
-        \nif self.args.n_gpu > 1:
-            model = torch.nn.DataParallel(model);
+        if self.args.n_gpu > 1:
+            model = torch.nn.DataParallel(model)
 
         # Distributed training (should be after apex fp16 initialization)
-        \nif self.args.local_rank != -1:
+        if self.args.local_rank != -1:
             model = torch.nn.parallel.DistributedDataParallel(
                 model,
                 device_ids=[self.args.local_rank],
                 output_device=self.args.local_rank,
                 find_unused_parameters=True,
-            );
+            )
 
-        \nif self.tb_writer is not None:
+        if self.tb_writer is not None:
             self.tb_writer.add_text("args", self.args.to_json_string())
-            self.tb_writer.add_hparams(self.args.to_sanitized_dict(), metric_dict={});
+            self.tb_writer.add_hparams(self.args.to_sanitized_dict(), metric_dict={})
 
         # Train!
-        \nif is_torch_tpu_available():
-            total_train_batch_size = self.args.train_batch_size * xm.xrt_world_size();
-        \nelse:
+        if is_torch_tpu_available():
+            total_train_batch_size = self.args.train_batch_size * xm.xrt_world_size()
+        else:
             total_train_batch_size = (
                 self.args.train_batch_size
                 * self.args.gradient_accumulation_steps
                 * (torch.distributed.get_world_size() if self.args.local_rank != -1 else 1)
-            );
-        \nlogger.info("***** Running training *****");
-        \nlogger.info("  Num examples = %d", self.num_examples(train_dataloader));
-        \nlogger.info("  Num Epochs = %d", num_train_epochs);
-        \nlogger.info("  Instantaneous batch size per device = %d", self.args.per_device_train_batch_size);
-        \nlogger.info("  Total train batch size (w. parallel, distributed & accumulation) = %d", total_train_batch_size);
-        \nlogger.info("  Gradient Accumulation steps = %d", self.args.gradient_accumulation_steps);
-        \nlogger.info("  Total optimization steps = %d", t_total);
+            )
+        logger.info("***** Running training *****")
+        logger.info("  Num examples = %d", self.num_examples(train_dataloader))
+        logger.info("  Num Epochs = %d", num_train_epochs)
+        logger.info("  Instantaneous batch size per device = %d", self.args.per_device_train_batch_size)
+        logger.info("  Total train batch size (w. parallel, distributed & accumulation) = %d", total_train_batch_size)
+        logger.info("  Gradient Accumulation steps = %d", self.args.gradient_accumulation_steps)
+        logger.info("  Total optimization steps = %d", t_total)
 
-        \nself.global_step = 0;
-        \nself.epoch = 0;
-        \nepochs_trained = 0;
-        \nsteps_trained_in_current_epoch = 0;
+        self.global_step = 0
+        self.epoch = 0
+        epochs_trained = 0
+        steps_trained_in_current_epoch = 0
         # Check if continuing training from a checkpoint
-        \nif model_path is not None:
+        if model_path is not None:
             # set global_step to global_step of last saved checkpoint from model path
             try:
                 self.global_step = int(model_path.split("-")[-1].split("/")[0])
@@ -481,14 +479,13 @@ class Trainer:
                 logger.info("  Will skip the first %d steps in the first epoch", steps_trained_in_current_epoch)
             except ValueError:
                 self.global_step = 0
-                logger.info("  Starting fine-tuning.");
-        '''
+                logger.info("  Starting fine-tuning.")
         
         # finetuning statement that I want to measure with timeit.repeat
         finetuning_statement = '''        
         # Measure fine-tuning time
         #start_time = time.time()
-        \nlogger.info("**** Starting tracking fine-tuning time ***");
+        logger.info("**** Starting tracking fine-tuning time ***");
         
         \ntr_loss = 0.0;
         \nlogging_loss = 0.0;
@@ -581,8 +578,7 @@ class Trainer:
             # Clean the state at the end of training
             delattr(self, "_past");
         '''
-        self.finetuning_time_list = timeit.Timer(setup = finetuning_setup, stmt = finetuning_statement, globals = globals()).repeat(repeat = self.args.train_time_repeat, 
-                                                  number = self.args.train_time_number)
+        self.finetuning_time_list = timeit.Timer(setup = finetuning_setup, stmt = finetuning_statement, globals = globals()).repeat(repeat = 1, number = 2)
         
         self.finetuning_time = min(self.finetuning_time_list) / self.args.train_time_number
             
