@@ -484,8 +484,7 @@ class Trainer:
         '''
         
         # finetuning statement that I want to measure with timeit.repeat
-        finetuning_statement = 
-        '''        
+        finetuning_statement = '''        
         # Measure fine-tuning time
         #start_time = time.time()
         \nlogger.info("**** Starting tracking fine-tuning time ***");
