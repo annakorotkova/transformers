@@ -489,7 +489,10 @@ class Trainer:
             except ValueError:
                 self.global_step = 0
                 logger.info("  Starting fine-tuning.")
-                
+
+        # update locals()
+        builtins.__dict__.update(locals())
+        
         # Measure fine-tuning time
         #start_time = time.time()
         logger.info("**** Starting tracking fine-tuning time ***")
