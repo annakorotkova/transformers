@@ -481,12 +481,13 @@ class Trainer:
                 self.global_step = 0
                 logger.info("  Starting fine-tuning.")
         
-        # finetuning statement that I want to measure with timeit.repeat
-        finetuning_statement = '''        
+        
         # Measure fine-tuning time
         #start_time = time.time()
-        logger.info("**** Starting tracking fine-tuning time ***");
+        logger.info("**** Starting tracking fine-tuning time ***")
         
+        # finetuning statement that I want to measure with timeit.repeat
+        finetuning_statement = '''        
         \ntr_loss = 0.0;
         \nlogging_loss = 0.0;
         \nmodel.zero_grad();
