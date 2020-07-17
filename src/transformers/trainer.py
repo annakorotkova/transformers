@@ -394,20 +394,22 @@ class Trainer:
                 Local path to the model if the model to train has been instantiated from a local path. If present,
                 training will resume from the optimizer/scheduler states loaded here.
         """
-        train_dataloader = self.get_train_dataloader()
-        if self.args.max_steps > 0:
+        
+        # finetuning setup (for measuring finetung time with timeit)
+        finetuning_setup = '''train_dataloader = self.get_train_dataloader();
+        \nif self.args.max_steps > 0:
             t_total = self.args.max_steps
             num_train_epochs = (
                 self.args.max_steps // (len(train_dataloader) // self.args.gradient_accumulation_steps) + 1
-            )
-        else:
+            );
+        \nelse:
             t_total = int(len(train_dataloader) // self.args.gradient_accumulation_steps * self.args.num_train_epochs)
-            num_train_epochs = self.args.num_train_epochs
+            num_train_epochs = self.args.num_train_epochs;
 
-        optimizer, scheduler = self.get_optimizers(num_training_steps=t_total)
+        \noptimizer, scheduler = self.get_optimizers(num_training_steps=t_total);
 
         # Check if saved optimizer or scheduler states exist
-        if (
+        \nif (
             model_path is not None
             and os.path.isfile(os.path.join(model_path, "optimizer.pt"))
             and os.path.isfile(os.path.join(model_path, "scheduler.pt"))
@@ -416,54 +418,54 @@ class Trainer:
             optimizer.load_state_dict(
                 torch.load(os.path.join(model_path, "optimizer.pt"), map_location=self.args.device)
             )
-            scheduler.load_state_dict(torch.load(os.path.join(model_path, "scheduler.pt")))
+            scheduler.load_state_dict(torch.load(os.path.join(model_path, "scheduler.pt")));
 
-        model = self.model
-        if self.args.fp16:
+        \nmodel = self.model;
+        \nif self.args.fp16:
             if not is_apex_available():
                 raise ImportError("Please install apex from https://www.github.com/nvidia/apex to use fp16 training.")
-            model, optimizer = amp.initialize(model, optimizer, opt_level=self.args.fp16_opt_level)
+            model, optimizer = amp.initialize(model, optimizer, opt_level=self.args.fp16_opt_level);
 
         # multi-gpu training (should be after apex fp16 initialization)
-        if self.args.n_gpu > 1:
-            model = torch.nn.DataParallel(model)
+        \nif self.args.n_gpu > 1:
+            model = torch.nn.DataParallel(model);
 
         # Distributed training (should be after apex fp16 initialization)
-        if self.args.local_rank != -1:
+        \nif self.args.local_rank != -1:
             model = torch.nn.parallel.DistributedDataParallel(
                 model,
                 device_ids=[self.args.local_rank],
                 output_device=self.args.local_rank,
                 find_unused_parameters=True,
-            )
+            );
 
-        if self.tb_writer is not None:
+        \nif self.tb_writer is not None:
             self.tb_writer.add_text("args", self.args.to_json_string())
-            self.tb_writer.add_hparams(self.args.to_sanitized_dict(), metric_dict={})
+            self.tb_writer.add_hparams(self.args.to_sanitized_dict(), metric_dict={});
 
         # Train!
-        if is_torch_tpu_available():
-            total_train_batch_size = self.args.train_batch_size * xm.xrt_world_size()
-        else:
+        \nif is_torch_tpu_available():
+            total_train_batch_size = self.args.train_batch_size * xm.xrt_world_size();
+        \nelse:
             total_train_batch_size = (
                 self.args.train_batch_size
                 * self.args.gradient_accumulation_steps
                 * (torch.distributed.get_world_size() if self.args.local_rank != -1 else 1)
-            )
-        logger.info("***** Running training *****")
-        logger.info("  Num examples = %d", self.num_examples(train_dataloader))
-        logger.info("  Num Epochs = %d", num_train_epochs)
-        logger.info("  Instantaneous batch size per device = %d", self.args.per_device_train_batch_size)
-        logger.info("  Total train batch size (w. parallel, distributed & accumulation) = %d", total_train_batch_size)
-        logger.info("  Gradient Accumulation steps = %d", self.args.gradient_accumulation_steps)
-        logger.info("  Total optimization steps = %d", t_total)
+            );
+        \nlogger.info("***** Running training *****");
+        \nlogger.info("  Num examples = %d", self.num_examples(train_dataloader));
+        \nlogger.info("  Num Epochs = %d", num_train_epochs);
+        \nlogger.info("  Instantaneous batch size per device = %d", self.args.per_device_train_batch_size);
+        \nlogger.info("  Total train batch size (w. parallel, distributed & accumulation) = %d", total_train_batch_size);
+        \nlogger.info("  Gradient Accumulation steps = %d", self.args.gradient_accumulation_steps);
+        \nlogger.info("  Total optimization steps = %d", t_total);
 
-        self.global_step = 0
-        self.epoch = 0
-        epochs_trained = 0
-        steps_trained_in_current_epoch = 0
+        \nself.global_step = 0;
+        \nself.epoch = 0;
+        \nepochs_trained = 0;
+        \nsteps_trained_in_current_epoch = 0;
         # Check if continuing training from a checkpoint
-        if model_path is not None:
+        \nif model_path is not None:
             # set global_step to global_step of last saved checkpoint from model path
             try:
                 self.global_step = int(model_path.split("-")[-1].split("/")[0])
@@ -478,21 +480,23 @@ class Trainer:
                 logger.info("  Will skip the first %d steps in the first epoch", steps_trained_in_current_epoch)
             except ValueError:
                 self.global_step = 0
-                logger.info("  Starting fine-tuning.")
-                
-        #  Measure fine-tuning time
-        #start_time = time.time()
-        logger.info("**** Starting tracking fine-tuning time ***")
-
-        finetuning_code_measure = 
+                logger.info("  Starting fine-tuning.");
         '''
-        tr_loss = 0.0
-        logging_loss = 0.0
-        model.zero_grad()
-        train_iterator = trange(
+        
+        # finetuning statement that I want to measure with timeit.repeat
+        finetuning_statement = 
+        '''        
+        # Measure fine-tuning time
+        #start_time = time.time()
+        \nlogger.info("**** Starting tracking fine-tuning time ***");
+        
+        \ntr_loss = 0.0;
+        \nlogging_loss = 0.0;
+        \nmodel.zero_grad();
+        \ntrain_iterator = trange(
             epochs_trained, int(num_train_epochs), desc="Epoch", disable=not self.is_local_master()
-        )
-        for epoch in train_iterator:
+        );
+        \nfor epoch in train_iterator:
             if isinstance(train_dataloader, DataLoader) and isinstance(train_dataloader.sampler, DistributedSampler):
                 train_dataloader.sampler.set_epoch(epoch)
             if is_torch_tpu_available():
@@ -570,14 +574,15 @@ class Trainer:
                 break
             if self.args.tpu_metrics_debug or self.args.debug:
                 # tpu-comment: Logging debug metrics for PyTorch/XLA (compile, execute times, ops, etc.)
-                xm.master_print(met.metrics_report())
-        if self.tb_writer:
-            self.tb_writer.close()
-        if self.args.past_index and hasattr(self, "_past"):
+                xm.master_print(met.metrics_report());
+        \nif self.tb_writer:
+            self.tb_writer.close();
+        \nif self.args.past_index and hasattr(self, "_past"):
             # Clean the state at the end of training
-            delattr(self, "_past")
+            delattr(self, "_past");
         '''
-        self.finetuning_time_list = timeit.repeat(stmt = finetuning_code_measure, repeat = self.args.train_time_repeat, number = self.args.train_time_number)
+        self.finetuning_time_list = timeit.repeat(setup = finetuning_setup, stmt = finetuning_statement, repeat = self.args.train_time_repeat, 
+                                                  number = self.args.train_time_number)
         
         self.finetuning_time = min(self.finetuning_time_list) / self.args.train_time_number
             
