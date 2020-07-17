@@ -579,8 +579,7 @@ class Trainer:
             # Clean the state at the end of training
             delattr(self, "_past");
         '''
-        self.finetuning_time_list = timeit.Timer(setup = 'from transformers import Trainer', stmt = finetuning_statement, 
-                                                 globals = globals()).repeat(repeat = 1, number = 2)
+        self.finetuning_time_list = timeit.Timer(stmt = finetuning_statement, globals = locals()).repeat(repeat = 1, number = 2)
         
         self.finetuning_time = min(self.finetuning_time_list) / self.args.train_time_number
             
