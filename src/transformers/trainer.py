@@ -485,7 +485,8 @@ class Trainer:
         logger.info("**** Starting tracking fine-tuning time ***")
 
         self.finetuning_time_list = timeit.repeat(
-        '''tr_loss = 0.0
+        '''
+        tr_loss = 0.0
         logging_loss = 0.0
         model.zero_grad()
         train_iterator = trange(
@@ -574,8 +575,7 @@ class Trainer:
             self.tb_writer.close()
         if self.args.past_index and hasattr(self, "_past"):
             # Clean the state at the end of training
-            delattr(self, "_past")
-        ''',
+            delattr(self, "_past")''',
         repeat = self.args.train_time_repeat, number = self.args.train_time_number)
         
         self.finetuning_time = min(self.finetuning_time_list) / self.args.train_time_number
