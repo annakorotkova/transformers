@@ -19,8 +19,6 @@ from torch.utils.data.dataset import Dataset
 from torch.utils.data.distributed import DistributedSampler
 from torch.utils.data.sampler import RandomSampler, Sampler, SequentialSampler
 from tqdm.auto import tqdm, trange
-import builtins
-builtins.__dict__.update(locals())
 
 from .data.data_collator import DataCollator, default_data_collator
 from .file_utils import is_apex_available, is_torch_tpu_available
@@ -581,7 +579,7 @@ class Trainer:
             # Clean the state at the end of training
             delattr(self, "_past");
         '''
-        self.finetuning_time_list = timeit.Timer(stmt = finetuning_statement, globals = locals()).repeat(repeat = 1, number = 2)
+        self.finetuning_time_list = timeit.Timer(setup = 'import builtins; \nbuiltins.__dict__.update(locals())', stmt = finetuning_statement, globals = locals()).repeat(repeat = 1, number = 2)
         
         self.finetuning_time = min(self.finetuning_time_list) / self.args.train_time_number
             
