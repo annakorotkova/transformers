@@ -20,8 +20,7 @@ from torch.utils.data.distributed import DistributedSampler
 from torch.utils.data.sampler import RandomSampler, Sampler, SequentialSampler
 from tqdm.auto import tqdm, trange
 import builtins
-import __builtin__
-__builtin__.__dict__.update(locals())
+builtins.__dict__.update(locals())
 
 from .data.data_collator import DataCollator, default_data_collator
 from .file_utils import is_apex_available, is_torch_tpu_available
