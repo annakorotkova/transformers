@@ -396,7 +396,8 @@ class Trainer:
         """
         
         # finetuning setup (for measuring finetung time with timeit)
-        finetuning_setup = '''train_dataloader = self.get_train_dataloader();
+        finetuning_setup = '''from __main__ import Trainer; # in order to be able to have access to arguments of class 'Trainer'
+        \ntrain_dataloader = self.get_train_dataloader();
         \nif self.args.max_steps > 0:
             t_total = self.args.max_steps
             num_train_epochs = (
