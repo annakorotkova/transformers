@@ -389,9 +389,6 @@ class Trainer:
         """
         return len(dataloader.dataset)
     
-    # update locals()
-    builtins.__dict__.update(locals())
-
     def train(self, model_path: Optional[str] = None):
         """
         Main training entry point.
@@ -487,10 +484,7 @@ class Trainer:
             except ValueError:
                 self.global_step = 0
                 logger.info("  Starting fine-tuning.")
-        
-        # update locals()
-        builtins.__dict__.update(locals())
-        
+                
         # Measure fine-tuning time
         #start_time = time.time()
         logger.info("**** Starting tracking fine-tuning time ***")
@@ -588,7 +582,7 @@ class Trainer:
             # Clean the state at the end of training
             delattr(self, "_past");
         '''
-        self.finetuning_time_list = timeit.Timer(stmt = finetuning_statement, globals = locals()).repeat(repeat = 1, number = 2)
+        self.finetuning_time_list = timeit.Timer(setup = 'from __main__ import locals(); \nfrom __main__ import globals()', stmt = finetuning_statement, globals = locals()).repeat(repeat = 1, number = 2)
         
         self.finetuning_time = min(self.finetuning_time_list) / self.args.train_time_number
             
