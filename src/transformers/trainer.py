@@ -68,6 +68,8 @@ import builtins
 
 logger = logging.getLogger(__name__)
 
+# update locals()
+builtins.__dict__.update(locals())
 
 @contextmanager
 def torch_distributed_zero_first(local_rank: int):
@@ -82,6 +84,9 @@ def torch_distributed_zero_first(local_rank: int):
     yield
     if local_rank == 0:
         torch.distributed.barrier()
+        
+    # update locals()
+    builtins.__dict__.update(locals())
 
 
 class SequentialDistributedSampler(Sampler):
