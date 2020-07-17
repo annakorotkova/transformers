@@ -126,15 +126,15 @@ class SequentialDistributedSampler(Sampler):
 
     def __len__(self):
         return self.num_samples
+    
+    # update locals()
+    builtins.__dict__.update(locals())
 
 
 def get_tpu_sampler(dataset: Dataset):
     if xm.xrt_world_size() <= 1:
         return RandomSampler(dataset)
     return DistributedSampler(dataset, num_replicas=xm.xrt_world_size(), rank=xm.get_ordinal())
-
-# update locals()
-builtins.__dict__.update(locals())
 
 class Trainer:
     """
@@ -582,7 +582,8 @@ class Trainer:
             # Clean the state at the end of training
             delattr(self, "_past");
         '''
-        self.finetuning_time_list = timeit.Timer(setup = 'from __main__ import globals()', stmt = finetuning_statement, globals = locals()).repeat(repeat = 1, number = 2)
+        self.finetuning_time_list = timeit.Timer(setup = 'from __main__ import globals()', stmt = finetuning_statement, 
+                                                 globals = {'local': locals(), 'global': globals()).repeat(repeat = 1, number = 2)  # pass both global and local variables
         
         self.finetuning_time = min(self.finetuning_time_list) / self.args.train_time_number
             
