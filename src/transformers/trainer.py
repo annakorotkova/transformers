@@ -63,6 +63,10 @@ def is_tensorboard_available():
 if is_wandb_available():
     import wandb
 
+## import builtins for timeit
+import builtins
+builtins.__dict__.update(locals())
+
 
 logger = logging.getLogger(__name__)
 
@@ -579,7 +583,7 @@ class Trainer:
             # Clean the state at the end of training
             delattr(self, "_past");
         '''
-        self.finetuning_time_list = timeit.Timer(setup = 'import builtins; \nbuiltins.__dict__.update(locals())', stmt = finetuning_statement, globals = locals()).repeat(repeat = 1, number = 2)
+        self.finetuning_time_list = timeit.Timer(stmt = finetuning_statement, globals = locals()).repeat(repeat = 1, number = 2)
         
         self.finetuning_time = min(self.finetuning_time_list) / self.args.train_time_number
             
