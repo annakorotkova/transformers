@@ -499,7 +499,7 @@ class Trainer:
             # Measure fine-tuning time
             # Added by Anna
             start_time = time.process_time()
-            logger.info("**** Starting tracking fine-tuning time ***")
+            logger.info("**** Starting tracking fine-tuning time for iteration %f ***", i) 
         
             tr_loss = 0.0
             logging_loss = 0.0
@@ -594,6 +594,7 @@ class Trainer:
         
             end_time = timeit.process_time() - start_time  # user cpu time of finetuning
             self.finetuning_time_list.append(end_time)
+            logger.info("\n\nFine-tuning time: %f secs\n\n", end_time)  
         
         self.finetuning_time = min(self.finetuning_time_list) / self.args.finetuning_iters  # self.args.finetuning_iters equals number of iterations
             
@@ -607,7 +608,7 @@ class Trainer:
             logs["epoch"] = self.epoch
          
         # Log finetuning time list
-        if self.finetuinig_time_list is not None:
+        if self.finetuning_time_list is not None:
             logs["finetuning_time_list"] = self.finetuning_time_list        
         # Log finetuning time
         if self.finetuning_time is not None:
