@@ -483,7 +483,7 @@ class Trainer:
             # Measure fine-tuning time
             # Added by Anna
             start_time = time.process_time()
-            logger.info("**** Starting tracking fine-tuning time for iteration %f ***", i) 
+            logger.info("**** Starting tracking fine-tuning time for iteration {} ***".format(i)) 
         
             tr_loss = 0.0
             logging_loss = 0.0
