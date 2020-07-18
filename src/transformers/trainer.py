@@ -4,7 +4,6 @@ import os
 import re
 import shutil
 import time     # added by Anna
-import timeit   # added by Anna
 import warnings
 from contextlib import contextmanager
 from pathlib import Path
@@ -63,13 +62,7 @@ def is_tensorboard_available():
 if is_wandb_available():
     import wandb
 
-## import builtins for timeit
-import builtins
-
 logger = logging.getLogger(__name__)
-
-# update locals()
-builtins.__dict__.update(locals())
 
 @contextmanager
 def torch_distributed_zero_first(local_rank: int):
@@ -85,10 +78,7 @@ def torch_distributed_zero_first(local_rank: int):
     if local_rank == 0:
         torch.distributed.barrier()
         
-    # update locals()
-    builtins.__dict__.update(locals())
-
-
+        
 class SequentialDistributedSampler(Sampler):
     """
     Distributed Sampler that subsamples indicies sequentially,
@@ -132,9 +122,6 @@ class SequentialDistributedSampler(Sampler):
     def __len__(self):
         return self.num_samples
     
-    # update locals()
-    builtins.__dict__.update(locals())
-
 
 def get_tpu_sampler(dataset: Dataset):
     if xm.xrt_world_size() <= 1:
@@ -489,9 +476,6 @@ class Trainer:
             except ValueError:
                 self.global_step = 0
                 logger.info("  Starting fine-tuning.")
-
-        # update locals()
-        builtins.__dict__.update(locals())
         
         # repeat finetuning multiple times in order to receive a more stable 'estimator' for the finetuning time
         for i in range(0, (self.args.finetuning_iters+1)):
@@ -592,7 +576,7 @@ class Trainer:
                 # Clean the state at the end of training
                 delattr(self, "_past")
         
-            end_time = timeit.process_time() - start_time  # user cpu time of finetuning
+            end_time = time.process_time() - start_time  # user cpu time of finetuning
             self.finetuning_time_list.append(end_time)
             logger.info("\n\nFine-tuning time: %f secs\n\n", end_time)  
         
