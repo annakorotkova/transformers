@@ -580,7 +580,7 @@ class Trainer:
             self.finetuning_time_list.append(end_time)
             logger.info("\n\nFine-tuning time: %f secs\n\n", end_time)  
         
-        self.finetuning_time = min(self.finetuning_time_list) / self.args.finetuning_iters  # self.args.finetuning_iters equals number of iterations
+        self.finetuning_time = min(self.finetuning_time_list)
             
         logger.info("\n\nMinimal fine-tuning time: %f secs\n\n", self.finetuning_time)         
 
