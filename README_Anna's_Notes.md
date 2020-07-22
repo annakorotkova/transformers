@@ -1,4 +1,4 @@
-## Changes made:
+## Changes made to the repository:
 
 1) Added finetuning_time_list & finetuning_time (as minimum) inside "train()" function in "trainer.py" script (can be found in src/transformers)
   a) measure time with the help of time.process_time()
@@ -9,10 +9,11 @@
 --> Added both those times in "_log()" function in order to be able to see them in wandb
 
 #### 3) in order to disable the warning "The current process just got forked. Disabling parallelism to avoid deadlocks... To disable this warning, please explicitly set TOKENIZERS_PARALLELISM=(true | false)" (--> used when multiprocessing; often used by dataloader https://docs.python.org/3/library/multiprocessing.html; does it make sense in my case??); https://github.com/huggingface/transformers/issues/5486
-import os
-os.environ["TOKENIZERS_PARALLELISM"] = "true"
--> in "run_glue.py" script
-
+  import os
+  os.environ["TOKENIZERS_PARALLELISM"] = "true"
+      -> in "run_glue.py" script
+      
+      
 ------------------------
 
 ## Hyperparameter combinations per task
@@ -59,6 +60,8 @@ parameters:
     value: .01
   adam_epsilon:
     value: 1e-6
+
+(Adam epsilon set to 1e-6 -> https://www.kaggle.com/philculliton/bert-optimization)
 
 --------------------
 
