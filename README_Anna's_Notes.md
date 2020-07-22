@@ -8,13 +8,10 @@
  
 --> Added both those times in "_log()" function in order to be able to see them in wandb
 
-##### in order to disable the warning "The current process just got forked. Disabling parallelism to avoid deadlocks... To disable this warning, please explicitly set TOKENIZERS_PARALLELISM=(true | false)" (--> used when multiprocessing; often used by dataloader https://docs.python.org/3/library/multiprocessing.html; does it make sense in my case??); https://github.com/huggingface/transformers/issues/5486
+#### 3) in order to disable the warning "The current process just got forked. Disabling parallelism to avoid deadlocks... To disable this warning, please explicitly set TOKENIZERS_PARALLELISM=(true | false)" (--> used when multiprocessing; often used by dataloader https://docs.python.org/3/library/multiprocessing.html; does it make sense in my case??); https://github.com/huggingface/transformers/issues/5486
 import os
 os.environ["TOKENIZERS_PARALLELISM"] = "true"
-##### -> in "run_glue.py" script
-
-write_dict[key] = value.__getstate__() in script "tokenizers_utils_base.py" (otherwise RoBERTa doesn't work)
---> didn't change anything; maybe value.content instead ?!
+-> in "run_glue.py" script
 
 ------------------------
 
