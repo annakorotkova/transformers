@@ -2,7 +2,8 @@
 
 1) Added finetuning_time_list & finetuning_time (as minimum) inside "train()" function in "trainer.py" script (can be found in src/transformers)
   a) measure time with the help of time.process_time()
-  b) added for-loop around fine-tuning (default: run three times) in order to receive more stable finetuning-times
+  b) added for-loop around fine-tuning (default: run three times, BUT: range(0,finetune_iters+1) -> accidently run 4 times instead of 3) 
+     in order to receive more stable finetuning-times
       --> Added finetuning_iters in "training_args.py" to pass number of iterations
 2) Added inference_time_list & inference_time (as minimum) inside "predition_loop()" function in "trainer.py" script
  
