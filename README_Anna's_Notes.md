@@ -8,15 +8,15 @@ Changes made:
  
 --> Added both those times in "_log()" function in order to be able to see them in wandb
 
-### in order to disable the warning "The current process just got forked. Disabling parallelism to avoid deadlocks... To disable this warning, please explicitly set TOKENIZERS_PARALLELISM=(true | false)" (--> used when multiprocessing; often used by dataloader https://docs.python.org/3/library/multiprocessing.html; does it make sense in my case??); https://github.com/huggingface/transformers/issues/5486
+##### in order to disable the warning "The current process just got forked. Disabling parallelism to avoid deadlocks... To disable this warning, please explicitly set TOKENIZERS_PARALLELISM=(true | false)" (--> used when multiprocessing; often used by dataloader https://docs.python.org/3/library/multiprocessing.html; does it make sense in my case??); https://github.com/huggingface/transformers/issues/5486
 import os
 os.environ["TOKENIZERS_PARALLELISM"] = "true"
-### -> in "run_glue.py" script
+##### -> in "run_glue.py" script
 
 write_dict[key] = value.__getstate__() in script "tokenizers_utils_base.py" (otherwise RoBERTa doesn't work)
 --> didn't change anything; maybe value.content instead ?!
 
-## Hyperparameter Kombinationen pro Datensatz
+### Hyperparameter combinations per task
 
 1) WNLI:
 program: /home/ubuntu/transformers-1/examples/text-classification/run_glue.py
@@ -34,9 +34,6 @@ metric:
   name: eval_acc
   goal: maximize
 parameters:
-  #
-  # parameters to be optimized over
-  #
   learning_rate:
     values: [1e-5, 5e-5]
   per_device_train_batch_size:
@@ -49,9 +46,6 @@ parameters:
     "roberta-base", 
     "albert-base-v1",
     "xlnet-base-cased"]
-  #
-  # fixed parameters
-  #
   task_name: 
     value: WNLI
   data_dir: 
@@ -67,8 +61,35 @@ parameters:
   adam_epsilon:
     value: 1e-6
 
+--------------------
+
+## time
+
+### time vs timeit: 
+(https://pythonhow.com/measure-execution-time-python-code/)
+ - timeit uses time.time() for Linux \& Mac; difference: garbage collection is disabled
+ - time: garbage collection not disabled
+ 
+## time.process_time(): 
+(https://www.geeksforgeeks.org/time-process_time-function-in-python/)
+ - always returns the float value of time in seconds
+ - return the value (in fractional seconds) of the sum of the system and user CPU time of the current process
+ - does not include time elapsed during sleep
+ - reference point of the returned value is undefined, so that only the difference between the results of consecutive calls is valid.
+
+## difference between CPU and clock/wall time:
+https://service.futurequest.net/index.php?/Knowledgebase/Article/View/407/0/difference-between-cpu-time-and-wall-time#:~:text=CPU\%20time\%20is\%20not\%20wall,was\%20dedicated\%20to\%20a\%20process.&text=However\%2C\%20the\%20time\%20in\%20between,counted\%20towards\%20your\%20CPU\%20time.
+https://serverfault.com/questions/48455/what-are-the-differences-between-wall-clock-time-user-time-and-cpu-time
+https://stackoverflow.com/questions/7335920/what-specifically-are-wall-clock-time-user-cpu-time-and-system-cpu-time-in-uni
+
+-> my choice: User CPU time with the help of time.process_time()
+
+## inference time
+mode(input) in _prediction_loop function -> Model call function (https://huggingface.co/transformers/model_doc/bert.html)
+
+-------------------
     
-    
+## Notes:    
 ### try out ftp16 (less precise than ftp32, but needs much less time; only works for GPU!!)
 
 ### have a look at 'benchmark'!! (already implemented functions)
@@ -76,4 +97,5 @@ parameters:
 
 ### batch_size for XLNet (recommended): 32, 48, 128 --> ausprobieren ?!
 
-### Werden wirklich alle 40 Kerne der CPU verwendet?? -> JA (siehe training_args.py - 'per_device_train_batch_size' -> 'Batch size per GPU/TPU core/CPU for training')
+### Are all 40 CPU kernels being used? -> Yes (see training_args.py - 'per_device_train_batch_size' -> 'Batch size per GPU/TPU core/CPU for training')
+
