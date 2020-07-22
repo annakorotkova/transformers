@@ -20,7 +20,7 @@
 ## Hyperparameter combinations per task
 
 1) WNLI:
-program: /home/ubuntu/transformers-1/examples/text-classification/run_glue.py
+program: /home/ubuntu/transformers-1/examples/text-classification/run_glue.py;
 command:
   - ${env}
   - python3
@@ -30,35 +30,35 @@ command:
   - "--evaluate_during_training" 
   - "--overwrite_output_dir"
   - ${args}
-method: grid
+method: grid; 
 metric:
-  name: eval_acc
-  goal: maximize
+  name: eval_acc; 
+  goal: maximize; 
 parameters:
   learning_rate:
-    values: [1e-5, 5e-5]
+    values: [1e-5, 5e-5]; 
   per_device_train_batch_size:
-    values: [16, 128]
+    values: [16, 128]; 
   max_seq_length:
-    values: [128, 256, 512]
+    values: [128, 256, 512]; 
   model_name_or_path:
     values: ["bert-base-uncased", 
     "distilbert-base-uncased",  
     "roberta-base", 
     "albert-base-v1",
-    "xlnet-base-cased"]
+    "xlnet-base-cased"]; 
   task_name: 
-    value: WNLI
+    value: WNLI; 
   data_dir: 
-    value: /home/ubuntu/WNLI 
+    value: /home/ubuntu/WNLI; 
   output_dir: 
-    value: /tmp/WNLI/
+    value: /tmp/WNLI/; 
   num_train_epochs:
-    value: 3
+    value: 3; 
   logging_steps:
-    value: 50
+    value: 50; 
   weight_decay:
-    value: .01
+    value: .01; 
   adam_epsilon:
     value: 1e-6
 
