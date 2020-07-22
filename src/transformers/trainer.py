@@ -169,6 +169,7 @@ class Trainer:
     optimizers: Tuple[torch.optim.Optimizer, torch.optim.lr_scheduler.LambdaLR] = None
     global_step: Optional[int] = None
     epoch: Optional[float] = None
+    # Added by Anna
     finetuning_time_list: List[float]
     finetuning_time: float
     inference_time_list: List[float]
@@ -478,12 +479,11 @@ class Trainer:
                 logger.info("  Starting fine-tuning.")
         
         # repeat finetuning multiple times in order to receive a more stable 'estimator' for the finetuning time
-        for i in range(0, (self.args.finetuning_iters+1)):
+        for i in range(0, (self.args.finetuning_iters+1)):   # Added by Anna
         
             # Measure fine-tuning time
-            # Added by Anna
-            start_time = time.process_time()
-            logger.info("**** Starting tracking fine-tuning time for iteration {} ***".format(i+1)) 
+            start_time = time.process_time()    # Added by Anna
+            logger.info("**** Starting tracking fine-tuning time for iteration {} ***".format(i+1))   # Added by Anna
         
             tr_loss = 0.0
             logging_loss = 0.0
@@ -580,9 +580,9 @@ class Trainer:
             self.finetuning_time_list.append(end_time)
             logger.info("\n\nFine-tuning time: %f secs\n\n", end_time)  
         
-        self.finetuning_time = min(self.finetuning_time_list)
+        self.finetuning_time = min(self.finetuning_time_list)      # Added by Anna
             
-        logger.info("\n\nMinimal fine-tuning time: %f secs\n\n", self.finetuning_time)         
+        logger.info("\n\nMinimal fine-tuning time: %f secs\n\n", self.finetuning_time)       # Added by Anna 
 
         logger.info("\n\nTraining completed. Do not forget to share your model on huggingface.co/models =)\n\n")
         return TrainOutput(self.global_step, tr_loss / self.global_step)
@@ -591,7 +591,7 @@ class Trainer:
         if self.epoch is not None:
             logs["epoch"] = self.epoch
          
-        # Log finetuning time list
+        # Log finetuning time list (following abstract addded by Anna)
         if self.finetuning_time_list is not None:
             logs["finetuning_time_list"] = self.finetuning_time_list        
         # Log finetuning time
@@ -847,15 +847,15 @@ class Trainer:
             with torch.no_grad():
                 
                 # Inference time
-                start_inf_time = time.process_time()
+                start_inf_time = time.process_time()     # Added by Anna
                 
                 outputs = model(**inputs)
                 
                 # End inference time
                 # Inference is defined by a single forward pass (huggingface definition https://huggingface.co/transformers/benchmarks.html)
-                end_inf_time = time.process_time() - start_inf_time
-                self.inference_time_list.append(end_inf_time)
-                logger.info("\n\nInference done in total %f secs\n\n", end_inf_time) 
+                end_inf_time = time.process_time() - start_inf_time         # Added by Anna
+                self.inference_time_list.append(end_inf_time)           # Added by Anna
+                logger.info("\n\nInference done in total %f secs\n\n", end_inf_time)     # Added by Anna
                 
                 if has_labels:
                     step_eval_loss, logits = outputs[:2]
