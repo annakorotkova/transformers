@@ -109,7 +109,7 @@ class TrainingArguments:
             make use of the past hidden states for their predictions. If this argument is set to a positive int, the
             ``Trainer`` will use the corresponding output (usually index 2) as the past state and feed it to the model
             at the next training step under the keyword argument ``mems``.
-        finetuning_iters (:obj:`float`, `optional`, defaults to 3):
+        finetuning_iters (:obj:`int`, `optional`, defaults to 3):
             Number of iterations of for loop for finetuning; in order to receive a more stable value for the finetuning time.
     """
 
@@ -225,7 +225,7 @@ class TrainingArguments:
     )
         
     # Added by Anna
-    finetuning_iters: float = field(
+    finetuning_iters: int = field(
         default=3,
         metadata={"help": "Execute finetuning 'finetuning_iters' times for measuring finetuning_time."},
     )
