@@ -479,7 +479,7 @@ class Trainer:
                 logger.info("  Starting fine-tuning.")
         
         # repeat finetuning multiple times in order to receive a more stable 'estimator' for the finetuning time
-        for i in range(0, (self.args.finetuning_iters+1)):   # Added by Anna
+        for i in range(0, (self.args.finetuning_iters)):   # Added by Anna
         
             # Measure fine-tuning time
             start_time = time.process_time()    # Added by Anna
