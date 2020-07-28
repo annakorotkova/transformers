@@ -482,7 +482,7 @@ class Trainer:
         for i in range(0, (self.args.finetuning_iters)):   # Added by Anna
         
             # Measure fine-tuning time
-            start_time = time.process_time()    # Added by Anna
+            start_time = time.time()    # Added by Anna
             logger.info("**** Starting tracking fine-tuning time for iteration {} ***".format(i+1))   # Added by Anna
         
             tr_loss = 0.0
@@ -576,7 +576,7 @@ class Trainer:
                 # Clean the state at the end of training
                 delattr(self, "_past")
         
-            end_time = time.process_time() - start_time  # user cpu time of finetuning
+            end_time = time.time() - start_time  # user cpu time of finetuning
             self.finetuning_time_list.append(end_time)
             logger.info("\n\nFine-tuning time: %f secs\n\n", end_time)  
         
@@ -847,13 +847,13 @@ class Trainer:
             with torch.no_grad():
                 
                 # Inference time
-                start_inf_time = time.process_time()     # Added by Anna
+                start_inf_time = time.time()     # Added by Anna
                 
                 outputs = model(**inputs)
                 
                 # End inference time
                 # Inference is defined by a single forward pass (huggingface definition https://huggingface.co/transformers/benchmarks.html)
-                end_inf_time = time.process_time() - start_inf_time         # Added by Anna
+                end_inf_time = time.time() - start_inf_time         # Added by Anna
                 self.inference_time_list.append(end_inf_time)           # Added by Anna
                 logger.info("\n\nInference done in total %f secs\n\n", end_inf_time)     # Added by Anna
                 
