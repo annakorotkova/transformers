@@ -113,7 +113,7 @@ class TrainingArguments:
             Number of iterations of for loop for finetuning; in order to receive a more stable value for the finetuning time.
     """
 
-    # train_time_repeat and train_time_number added by Anna
+    # finetuning_iters added by Anna
     
     output_dir: str = field(
         metadata={"help": "The output directory where the model predictions and checkpoints will be written."}
