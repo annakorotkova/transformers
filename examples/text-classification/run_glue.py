@@ -24,6 +24,7 @@ from dataclasses import dataclass, field
 from typing import Callable, Dict, Optional
 
 ## in order to disable the warning "The current process just got forked. Disabling parallelism to avoid deadlocks... To disable this warning, please explicitly set TOKENIZERS_PARALLELISM=(true | false)"
+# Added by Anna
 import os
 os.environ["TOKENIZERS_PARALLELISM"] = "true"
 
