@@ -1,4 +1,4 @@
-# Changes made to the transformers repository (version 3.0.0) by huggingface
+# Changes made to the transformers repository from huggingface (version 3.0.0)
 
 - in order to disable the warning "The current process just got forked. Disabling parallelism to avoid deadlocks... To disable this warning, please explicitly set TOKENIZERS_PARALLELISM=(true | false)" (https://github.com/huggingface/transformers/issues/5486) I added the following lines to the *run:gue.py* script:
   - `import os`
