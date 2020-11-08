@@ -9,4 +9,4 @@
 - Added *inference_time_list* and *inference_time* (as minimum) inside the function *_predition_loop()* in *trainer.py* script
 - Added *finetuning_time_list*, *finetuning_time*, *inference_time_list* and *inference_time* to *_log()* function in order enable logging to wandb
 - Added argument *finetuning_iters* in *training_args.py* to pass number of fine-tuning iterations (default: 3)
-- All changes are marked with "#Changed by Anna"
+- All changes are marked with "#added by Anna"
